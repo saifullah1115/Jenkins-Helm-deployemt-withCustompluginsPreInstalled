@@ -1,0 +1,17 @@
+FROM jenkins/jenkins:2.452.1-jdk17
+
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+
+#RUN jenkins-plugin-cli  --plugin-file /usr/share/jenkins/ref/plugins.txt
+
+RUN set -eux; \
+
+    for i in {1..5}; do \
+
+      echo "Attempt $i: Installing Jenkins plugins..."; \
+
+      jenkins-plugin-cli --verbose --plugin-file /usr/share/jenkins/ref/plugins.txt && break || sleep 10; \
+
+    done
+
+USER jenkins

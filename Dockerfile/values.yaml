@@ -1,0 +1,166 @@
+controller:
+
+  image:
+
+    registry: internal-registry.tkg.mobilink.net.pk
+
+    repository: wso2-dev/plugins-jenkins
+
+    tag: preinstall-plugins
+
+  installPlugins: false
+
+  ingress:
+
+    enabled: true
+
+    paths:
+
+      - path: /
+
+        pathType: Prefix
+
+        backend:
+
+          service:
+
+            name: jenkins
+
+            port:
+
+              number: 8080
+
+    ingressClassName: "internal-contour"
+
+    hostName: jenkins.testing.com
+
+  admin:
+
+    username: ""
+
+    password: ""
+
+    userKey: jenkins-admin-user
+
+    passwordKey: jenkins-admin-password
+
+    createSecret: false
+
+  JCasC:
+
+    defaultConfig: true
+
+    authorizationStrategy: |-
+
+       roleBased:
+
+          roles:
+
+            global:
+
+              - name: "saifullah"
+
+                description: "Jenkins administrators"
+
+                permissions:
+
+                  - "Overall/Administer"
+
+                entries:
+
+                  - user: "saifullah"
+
+              - name: "wofi"
+
+                description: "Users allowed to create and manage jobs"
+
+                permissions:
+
+                  - "Job/Create"
+
+                  - "Job/Read"
+
+                  - "Job/Configure"
+
+                  - "Job/Build"
+
+                  - "Job/Cancel"
+
+                  - "Overall/Read"
+
+                entries:
+
+                  - user: "wofi"
+
+    configMapAnnotations: {}
+
+    securityRealm: |-
+
+      local:
+
+        allowsSignup: false
+
+        enableCaptcha: false
+
+        users:  
+
+
+  probes:
+
+    startupProbe:
+
+      failureThreshold: 12
+
+      httpGet:
+
+        path: '{{ default "" .Values.controller.jenkinsUriPrefix }}/login'
+
+        port: 8080
+
+      periodSeconds: 10
+
+      timeoutSeconds: 5
+
+      initialDelaySeconds: 60
+
+    livenessProbe:
+
+      failureThreshold: 5
+
+      httpGet:
+
+        path: '{{ default "" .Values.controller.jenkinsUriPrefix }}/login'
+
+        port: 8080
+
+      periodSeconds: 10
+
+      timeoutSeconds: 5
+
+      initialDelaySeconds: 60
+
+    readinessProbe:
+
+      failureThreshold: 3
+
+      httpGet:
+
+        path: '{{ default "" .Values.controller.jenkinsUriPrefix }}/login'
+
+        port: 8080
+
+      periodSeconds: 10
+
+      timeoutSeconds: 5
+
+persistence:
+
+  volumes:
+
+    - name: jenkins-home
+
+      persistentVolumeClaim:
+
+        claimName: jenkins-backup
+
+
